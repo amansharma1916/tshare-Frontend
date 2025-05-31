@@ -1,0 +1,42 @@
+body{
+  background-color: rgb(245, 13, 13);
+  color: white;
+}
+
+.p1{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100dvw;
+  height: 100dvh;
+}
+.mainBox{
+  background-color: aqua;
+  color: black;
+  height: 30rem;
+  width: 40rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+}
+
+.shareBox , .recieve{
+  background-color: black;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  color: white;
+  height: 10rem;
+  width: 10rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.Btn{
+  background-color: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.5rem;
+}

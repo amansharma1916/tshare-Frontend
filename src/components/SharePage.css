@@ -1,0 +1,33 @@
+.shareMain{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100dvw;
+    height: 100dvh;
+}
+.textBox{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 2rem;
+    
+    width: 100dvw;
+    height: 100dvh;
+}
+
+#sharePageBtn{
+    border: 2px solid green;
+}
+input{
+    width: 20rem;
+    height: 3rem;
+    text-align: center;
+    font-size: 1.5rem;
+    border: none;
+}
+
+input::-moz-focus-inner , input::-moz-focus-outer{
+    border: none;
+    text-align: center;
+}
