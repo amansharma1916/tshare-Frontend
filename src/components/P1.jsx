@@ -8,10 +8,10 @@ const P1 = () => {
   return (
     <div className="p1">
       <div className="mainBox">
-        <div className="shareBox">
+        <div className="shareBox" onClick={sharePage}>
           <button className='Btn' id='shareBtn' onClick={sharePage}>Share</button>
         </div>
-        <div className="recieve">
+        <div className="recieve" onClick={()=>{window.location.href = '/recievePage'}}>
           <button className='Btn' id='recieveBtn' onClick={()=>{window.location.href = '/recievePage'}}>Recieve</button>
 
         </div>
