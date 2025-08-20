@@ -1,33 +1,86 @@
-.shareMain{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100dvw;
-    height: 100dvh;
-}
-.textBox{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 2rem;
-    
-    width: 100dvw;
-    height: 100dvh;
+.shareMain {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;    /* fixed */
+  height: 100vh;   /* fixed */
+  background-color: #121212;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
 }
 
-#sharePageBtn{
-    border: 2px solid green;
-}
-input{
-    width: 20rem;
-    height: 3rem;
-    text-align: center;
-    font-size: 1.5rem;
-    border: none;
+.textBox {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 40rem;
+  max-width: 90vw;
+  align-items: center;
+  background-color: #1e1e1e;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0, 191, 255, 0.4);
 }
 
-input::-moz-focus-inner , input::-moz-focus-outer{
-    border: none;
-    text-align: center;
+.code h1 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.8rem;
+  color: #00bfff;
+  word-break: break-word;
+}
+
+textarea.input {
+  width: 100%;
+  height: 15rem;
+  padding: 1rem;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background-color: #121212;
+  color: #eee;
+  font-family: 'Courier New', Courier, monospace;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+textarea.input:focus {
+  border-color: #00bfff;
+  box-shadow: 0 0 8px #00bfff;
+}
+
+.Btn {
+  padding: 0.7rem 1.8rem;
+  border-radius: 8px;
+  border: 2px solid #00bfff;
+  background-color: transparent;
+  color: #00bfff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.Btn:hover {
+  background-color: #00bfff;
+  color: #121212;
+}
+
+.Btn:active {
+  background-color: #009acd;
+  border-color: #009acd;
+}
+
+/* For Back button differentiate slightly */
+#backBtn {
+  border-color: #777;
+  color: #777;
+}
+
+#backBtn:hover {
+  background-color: #777;
+  color: #121212;
 }
