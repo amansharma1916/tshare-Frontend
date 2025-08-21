@@ -3,9 +3,12 @@ import './SharePage.css';
 
 const SharePage = () => {
   const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false); 
 
   const saveTextDb = () => {
     const text = document.getElementById('sharePageInput').value;
+    setLoading(true); 
+
     fetch('https://tshare-backend.onrender.com/save', {
       method: 'POST',
       headers: {
@@ -21,6 +24,10 @@ const SharePage = () => {
       })
       .catch(error => {
         console.error('Error:', error);
+        alert('Failed to share text.');
+      })
+      .finally(() => {
+        setLoading(false); // stop loading
       });
   };
 
@@ -37,10 +44,19 @@ const SharePage = () => {
             placeholder="Input Text"
             rows={10}
           />
-          <button className="Btn" id="sharePageBtn" onClick={saveTextDb}>
-            Share
+          <button
+            className="Btn"
+            id="sharePageBtn"
+            onClick={saveTextDb}
+            disabled={loading} 
+          >
+            {loading ? 'Sharing...' : 'Share'}
           </button>
-          <button className="Btn" id="backBtn" onClick={() => { window.location.href = '/'; }}>
+          <button
+            className="Btn"
+            id="backBtn"
+            onClick={() => { window.location.href = '/'; }}
+          >
             Back
           </button>
         </div>
