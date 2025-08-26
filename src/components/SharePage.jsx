@@ -9,7 +9,7 @@ const SharePage = () => {
     const text = document.getElementById('sharePageInput').value;
     setLoading(true); 
 
-    fetch('https://tshare-backend.onrender.com/save', {
+    fetch('https://tshare-backend.vercel.app/save', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
