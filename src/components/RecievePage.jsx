@@ -6,7 +6,7 @@ const RecievePage = () => {
 
   const recieveData = () => {
     const code = document.querySelector('input').value;
-    fetch(`https://tshare-backend.onrender.com/get/${code}`)
+    fetch(`https://tshare-backend.vercel.app/get/${code}`)
       .then(res => res.json())
       .then(data => {
         // Unescape newline characters if returned as literal "\n"
