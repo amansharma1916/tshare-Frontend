@@ -1,3 +1,3 @@
-const bannerText = "Sahil piyush ka baap hai";
+const bannerText = "Developer - Aman ©";
 
 export default bannerText;
