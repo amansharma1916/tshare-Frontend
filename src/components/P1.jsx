@@ -1,5 +1,6 @@
 import React from 'react'
 import './p1.css'
+import bannerText from './bannerText';
 
 const P1 = () => {
   const sharePage = () => {
@@ -10,7 +11,7 @@ const P1 = () => {
     <div className="p1">
       {/* Added div showing your name at the top */}
       <div className="nameBanner">
-        Sahil piyush ka baap hai 
+        {bannertext}
       </div>
       
       <div className="mainBox">
