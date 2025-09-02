@@ -10,6 +10,9 @@ export const endpoints = {
     adminDeleteAllTexts: `${API_URL}/admin/texts`,
     adminUpdateText: (id) => `${API_URL}/admin/texts/${id}`,
     adminChangePassword: `${API_URL}/admin/password`,
+    adminUpdateCode: (id) => `${API_URL}/admin/texts/${id}/code`,
+    adminRegenerateCode: (id) => `${API_URL}/admin/texts/${id}/regenerate-code`,
+    adminCheckCode: (code) => `${API_URL}/admin/check-code/${code}`,
 };
 
 export default {

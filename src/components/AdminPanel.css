@@ -88,17 +88,19 @@
 
 .actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
 }
 
 .action-btn {
     border: none;
     border-radius: 6px;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
     transition: var(--hover-transition);
+    white-space: nowrap;
 }
 
 .action-btn.edit {
@@ -108,6 +110,26 @@
 
 .action-btn.edit:hover {
     background-color: #2563eb;
+    transform: translateY(-2px);
+}
+
+.action-btn.edit-code {
+    background-color: #8b5cf6;
+    color: white;
+}
+
+.action-btn.edit-code:hover {
+    background-color: #7c3aed;
+    transform: translateY(-2px);
+}
+
+.action-btn.regenerate-code {
+    background-color: #10b981;
+    color: white;
+}
+
+.action-btn.regenerate-code:hover {
+    background-color: #059669;
     transform: translateY(-2px);
 }
 
@@ -214,13 +236,46 @@
     font-weight: 500;
 }
 
-.password-field input {
+.password-field input,
+.code-field input {
     width: 100%;
     padding: 1rem;
     border-radius: 8px;
     background: rgba(15, 23, 42, 0.6);
     color: var(--light-color);
     border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-field {
+    margin-bottom: 1.5rem;
+}
+
+.code-field label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.code-input {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 1.2rem;
+    text-align: center;
+    letter-spacing: 0.5rem;
+}
+
+.code-info {
+    background: rgba(15, 23, 42, 0.4);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+    border-left: 3px solid var(--primary-color);
+}
+
+.code-info .highlight {
+    font-family: 'Source Code Pro', monospace;
+    color: var(--accent-color);
+    font-weight: 500;
 }
 
 .Btn.save {

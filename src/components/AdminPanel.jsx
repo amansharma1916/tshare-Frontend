@@ -10,6 +10,10 @@ const AdminPanel = () => {
     const [editingText, setEditingText] = useState(null);
     const [editedContent, setEditedContent] = useState('');
     const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showCodeModal, setShowCodeModal] = useState(false);
+    const [editingCode, setEditingCode] = useState(null);
+    const [newCode, setNewCode] = useState('');
+    const [codeError, setCodeError] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -133,6 +137,108 @@ const AdminPanel = () => {
         setEditedContent('');
     };
 
+    const handleEditCode = (text) => {
+        setEditingCode(text);
+        setNewCode(text.id.toString());
+        setCodeError('');
+        setShowCodeModal(true);
+    };
+
+    const handleUpdateCode = async () => {
+        if (!editingCode) return;
+        setCodeError('');
+
+        // Validate the code
+        if (!newCode || isNaN(newCode) || newCode.length !== 4 || parseInt(newCode) < 1000 || parseInt(newCode) > 9999) {
+            setCodeError('Code must be a 4-digit number between 1000 and 9999');
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoints.adminUpdateCode(editingCode.id), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ newCode: parseInt(newCode) }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Update the text in the local state with the new code
+                setTexts(texts.map(text =>
+                    text.id === editingCode.id ? { ...text, id: parseInt(newCode) } : text
+                ));
+                setShowCodeModal(false);
+                setEditingCode(null);
+                setNewCode('');
+                showActionMessage('Code updated successfully', 'success');
+            } else {
+                setCodeError(data.message || 'Failed to update code');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setCodeError('Failed to connect to server');
+        }
+    };
+
+    const handleRegenerateCode = async (id) => {
+        if (!window.confirm('Are you sure you want to generate a new random code for this text?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoints.adminRegenerateCode(id), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Update the text in the local state with the new code
+                setTexts(texts.map(text =>
+                    text.id === parseInt(data.oldCode) ? { ...text, id: data.newCode } : text
+                ));
+                showActionMessage(`Code regenerated successfully: ${data.newCode}`, 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to regenerate code', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
+
+    const handleCheckCodeAvailability = async () => {
+        if (!newCode || newCode.length !== 4) return;
+
+        try {
+            const response = await fetch(endpoints.adminCheckCode(newCode));
+            const data = await response.json();
+
+            if (data.success) {
+                if (!data.isAvailable && parseInt(newCode) !== editingCode.id) {
+                    setCodeError('This code is already in use. Please choose a different code.');
+                } else {
+                    setCodeError('');
+                }
+            }
+        } catch (error) {
+            console.error('Error checking code availability:', error);
+        }
+    };
+
+    const handleCancelCodeEdit = () => {
+        setShowCodeModal(false);
+        setEditingCode(null);
+        setNewCode('');
+        setCodeError('');
+    };
+
     const handleChangePassword = async (e) => {
         e.preventDefault();
         setPasswordError('');
@@ -245,7 +351,13 @@ const AdminPanel = () => {
                                         <td>{formatDate(text.createdAt)}</td>
                                         <td className="actions">
                                             <button className="action-btn edit" onClick={() => handleEditText(text)}>
-                                                Edit
+                                                Edit Text
+                                            </button>
+                                            <button className="action-btn edit-code" onClick={() => handleEditCode(text)}>
+                                                Edit Code
+                                            </button>
+                                            <button className="action-btn regenerate-code" onClick={() => handleRegenerateCode(text.id)}>
+                                                New Code
                                             </button>
                                             <button className="action-btn delete" onClick={() => handleDeleteText(text.id)}>
                                                 Delete
@@ -326,6 +438,64 @@ const AdminPanel = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Code Modal */}
+            {showCodeModal && (
+                <div className="modal-overlay">
+                    <div className="modal code-modal">
+                        <h2>Edit Code</h2>
+                        <div className="code-info">
+                            <p>Current text: <span className="highlight">
+                                {editingCode?.text.length > 50
+                                    ? `${editingCode?.text.substring(0, 50)}...`
+                                    : editingCode?.text}
+                            </span></p>
+                            <p>Current code: <span className="highlight">{editingCode?.id}</span></p>
+                        </div>
+
+                        <div className="code-field">
+                            <label>New Code (4 digits)</label>
+                            <input
+                                type="text"
+                                value={newCode}
+                                onChange={(e) => {
+                                    // Only allow digits and limit to 4 characters
+                                    const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                    setNewCode(value);
+                                }}
+                                onBlur={handleCheckCodeAvailability}
+                                maxLength={4}
+                                pattern="\d{4}"
+                                placeholder="Enter a 4-digit code"
+                                required
+                                className="code-input"
+                            />
+                        </div>
+
+                        {codeError && (
+                            <div className="error-message">{codeError}</div>
+                        )}
+
+                        <div className="modal-buttons">
+                            <button
+                                type="button"
+                                className="Btn save"
+                                onClick={handleUpdateCode}
+                                disabled={!newCode || newCode.length !== 4 || codeError}
+                            >
+                                Update Code
+                            </button>
+                            <button
+                                type="button"
+                                className="Btn cancel"
+                                onClick={handleCancelCodeEdit}
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
