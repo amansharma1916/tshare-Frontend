@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './SharePage.css';
+import bannerText from './bannerText';
 
 const SharePage = () => {
   const [code, setCode] = useState('');
@@ -34,7 +35,7 @@ const SharePage = () => {
   return (
     <div>
       <div className="nameBanner">
-        Sahil piyush ka baap hai 
+        {bannerText}
       </div>
       <div className="shareMain">
         <div className="textBox">
