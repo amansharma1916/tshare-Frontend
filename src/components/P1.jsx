@@ -11,7 +11,7 @@ const P1 = () => {
     <div className="p1">
       {/* Added div showing your name at the top */}
       <div className="nameBanner">
-        {bannertext}
+        {bannerText}
       </div>
       
       <div className="mainBox">
