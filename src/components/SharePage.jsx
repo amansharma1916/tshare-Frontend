@@ -1,12 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './SharePage.css';
 import bannerText from './bannerText';
-import { endpoints } from '../api/api';
+import { endpoints, baseUrl } from '../api/api';
+import io from 'socket.io-client';
 
 const SharePage = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [socket, setSocket] = useState(null);
+
+  // Initialize socket connection
+  useEffect(() => {
+    const newSocket = io(baseUrl);
+    setSocket(newSocket);
+
+    return () => {
+      if (newSocket) newSocket.disconnect();
+    };
+  }, []);
 
   const saveTextDb = () => {
     const text = document.getElementById('sharePageInput').value;
@@ -28,6 +40,14 @@ const SharePage = () => {
       .then(data => {
         setCode(data.id);
         document.getElementById('sharePageInput').value = '';
+
+        // Emit the text update via socket.io to notify all connected clients
+        if (socket) {
+          socket.emit('text-update', {
+            textId: data.id,
+            text: text
+          });
+        }
         // Don't show alert, the UI will show the code
       })
       .catch(error => {

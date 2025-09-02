@@ -1,6 +1,8 @@
 // src/api/api.js
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://tshare-backend.vercel.app';
 
+export const baseUrl = API_URL;
+
 export const endpoints = {
     save: `${API_URL}/save`,
     get: (id) => `${API_URL}/get/${id}`,
@@ -13,9 +15,17 @@ export const endpoints = {
     adminUpdateCode: (id) => `${API_URL}/admin/texts/${id}/code`,
     adminRegenerateCode: (id) => `${API_URL}/admin/texts/${id}/regenerate-code`,
     adminCheckCode: (code) => `${API_URL}/admin/check-code/${code}`,
+
+    // Public Room endpoints
+    adminPublicRooms: `${API_URL}/admin/public-rooms`,
+    adminDeletePublicRoom: (code) => `${API_URL}/admin/public-rooms/${code}`,
+    adminTogglePublicRoomStatus: (code) => `${API_URL}/admin/public-rooms/${code}/toggle-status`,
+    validatePublicRoom: (code) => `${API_URL}/public-room/validate/${code}`,
+    getPublicRoomMessages: (code) => `${API_URL}/public-room/${code}/messages`,
 };
 
 export default {
     API_URL,
+    baseUrl,
     endpoints,
 };

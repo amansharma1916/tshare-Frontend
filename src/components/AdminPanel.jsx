@@ -20,6 +20,14 @@ const AdminPanel = () => {
     const [passwordError, setPasswordError] = useState('');
     const [actionMessage, setActionMessage] = useState({ text: '', type: '' });
 
+    // Public room states
+    const [activeTab, setActiveTab] = useState('texts');
+    const [publicRooms, setPublicRooms] = useState([]);
+    const [roomsLoading, setRoomsLoading] = useState(false);
+    const [roomError, setRoomError] = useState('');
+    const [showNewRoomModal, setShowNewRoomModal] = useState(false);
+    const [newRoomName, setNewRoomName] = useState('');
+
     // Check authentication status
     useEffect(() => {
         const isAuthenticated = sessionStorage.getItem('adminAuthenticated') === 'true';
@@ -27,6 +35,7 @@ const AdminPanel = () => {
             window.location.href = '/admin/login';
         }
         fetchTexts();
+        fetchPublicRooms();
     }, []);
 
     const fetchTexts = async () => {
@@ -292,6 +301,106 @@ const AdminPanel = () => {
         return date.toLocaleString();
     };
 
+    // Public Room management functions
+    const fetchPublicRooms = async () => {
+        setRoomsLoading(true);
+        setRoomError('');
+
+        try {
+            const response = await fetch(endpoints.adminPublicRooms);
+            const data = await response.json();
+
+            if (data.success) {
+                setPublicRooms(data.rooms);
+            } else {
+                setRoomError('Failed to fetch public rooms');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setRoomError('Failed to connect to server. Please try again.');
+        } finally {
+            setRoomsLoading(false);
+        }
+    };
+
+    const handleCreateRoom = async () => {
+        try {
+            const response = await fetch(endpoints.adminPublicRooms, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: newRoomName }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setPublicRooms([data.room, ...publicRooms]);
+                setShowNewRoomModal(false);
+                setNewRoomName('');
+                showActionMessage(`Public room created successfully. Code: ${data.room.code}`, 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to create public room', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
+
+    const handleDeleteRoom = async (code) => {
+        if (!window.confirm('Are you sure you want to delete this public room?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoints.adminDeletePublicRoom(code), {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setPublicRooms(publicRooms.filter(room => room.code !== code));
+                showActionMessage('Public room deleted successfully', 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to delete public room', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
+
+    const handleToggleRoomStatus = async (code) => {
+        try {
+            const response = await fetch(endpoints.adminTogglePublicRoomStatus(code), {
+                method: 'PUT',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setPublicRooms(publicRooms.map(room =>
+                    room.code === code ? { ...room, active: data.active } : room
+                ));
+                showActionMessage(`Room ${data.active ? 'activated' : 'deactivated'} successfully`, 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to update room status', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text)
+            .then(() => showActionMessage('Copied to clipboard', 'success'))
+            .catch(err => console.error('Failed to copy:', err));
+    };
+
     return (
         <div className="admin-panel-container">
             <div className="nameBanner">
@@ -299,17 +408,39 @@ const AdminPanel = () => {
             </div>
 
             <div className="admin-controls">
-                <button className="Btn refresh" onClick={fetchTexts}>
+                <button className="Btn refresh" onClick={() => activeTab === 'texts' ? fetchTexts() : fetchPublicRooms()}>
                     Refresh Data
                 </button>
-                <button className="Btn delete-all" onClick={handleDeleteAllTexts}>
-                    Delete All Texts
-                </button>
+                {activeTab === 'texts' && (
+                    <button className="Btn delete-all" onClick={handleDeleteAllTexts}>
+                        Delete All Texts
+                    </button>
+                )}
+                {activeTab === 'public-rooms' && (
+                    <button className="Btn create-room" onClick={() => setShowNewRoomModal(true)}>
+                        Create Public Room
+                    </button>
+                )}
                 <button className="Btn change-password" onClick={() => setShowPasswordModal(true)}>
                     Change Password
                 </button>
                 <button className="Btn logout" onClick={handleLogout}>
                     Logout
+                </button>
+            </div>
+
+            <div className="admin-tabs">
+                <button
+                    className={`tab-btn ${activeTab === 'texts' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('texts')}
+                >
+                    Shared Texts
+                </button>
+                <button
+                    className={`tab-btn ${activeTab === 'public-rooms' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('public-rooms')}
+                >
+                    Public Rooms
                 </button>
             </div>
 
@@ -320,54 +451,118 @@ const AdminPanel = () => {
             )}
 
             <div className="admin-content">
-                <h1>Shared Texts ({texts.length})</h1>
+                {activeTab === 'texts' && (
+                    <>
+                        <h1>Shared Texts ({texts.length})</h1>
 
-                {loading ? (
-                    <div className="loading">Loading...</div>
-                ) : error ? (
-                    <div className="error-message">{error}</div>
-                ) : texts.length === 0 ? (
-                    <div className="no-data">No texts found</div>
-                ) : (
-                    <div className="texts-table-container">
-                        <table className="texts-table">
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Text</th>
-                                    <th>Created At</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {texts.map(text => (
-                                    <tr key={text.id}>
-                                        <td>{text.id}</td>
-                                        <td className="text-content">
-                                            {text.text.length > 100
-                                                ? `${text.text.substring(0, 100)}...`
-                                                : text.text}
-                                        </td>
-                                        <td>{formatDate(text.createdAt)}</td>
-                                        <td className="actions">
-                                            <button className="action-btn edit" onClick={() => handleEditText(text)}>
-                                                Edit Text
-                                            </button>
-                                            <button className="action-btn edit-code" onClick={() => handleEditCode(text)}>
-                                                Edit Code
-                                            </button>
-                                            <button className="action-btn regenerate-code" onClick={() => handleRegenerateCode(text.id)}>
-                                                New Code
-                                            </button>
-                                            <button className="action-btn delete" onClick={() => handleDeleteText(text.id)}>
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                        {loading ? (
+                            <div className="loading">Loading...</div>
+                        ) : error ? (
+                            <div className="error-message">{error}</div>
+                        ) : texts.length === 0 ? (
+                            <div className="no-data">No texts found</div>
+                        ) : (
+                            <div className="texts-table-container">
+                                <table className="texts-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Text</th>
+                                            <th>Created At</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {texts.map(text => (
+                                            <tr key={text.id}>
+                                                <td>{text.id}</td>
+                                                <td className="text-content">
+                                                    {text.text.length > 100
+                                                        ? `${text.text.substring(0, 100)}...`
+                                                        : text.text}
+                                                </td>
+                                                <td>{formatDate(text.createdAt)}</td>
+                                                <td className="actions">
+                                                    <button className="action-btn edit" onClick={() => handleEditText(text)}>
+                                                        Edit Text
+                                                    </button>
+                                                    <button className="action-btn edit-code" onClick={() => handleEditCode(text)}>
+                                                        Edit Code
+                                                    </button>
+                                                    <button className="action-btn regenerate-code" onClick={() => handleRegenerateCode(text.id)}>
+                                                        New Code
+                                                    </button>
+                                                    <button className="action-btn delete" onClick={() => handleDeleteText(text.id)}>
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {activeTab === 'public-rooms' && (
+                    <>
+                        <h1>Public Rooms ({publicRooms.length})</h1>
+
+                        {roomsLoading ? (
+                            <div className="loading">Loading...</div>
+                        ) : roomError ? (
+                            <div className="error-message">{roomError}</div>
+                        ) : publicRooms.length === 0 ? (
+                            <div className="no-data">No public rooms found. Create one to get started!</div>
+                        ) : (
+                            <div className="rooms-table-container">
+                                <table className="rooms-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Room Code</th>
+                                            <th>Room Name</th>
+                                            <th>Status</th>
+                                            <th>Created At</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {publicRooms.map(room => (
+                                            <tr key={room.code} className={!room.active ? 'inactive-row' : ''}>
+                                                <td className="room-code">
+                                                    {room.code}
+                                                    <button
+                                                        className="copy-btn"
+                                                        onClick={() => copyToClipboard(room.code)}
+                                                        title="Copy code to clipboard"
+                                                    >
+                                                        Copy Code
+                                                    </button>
+                                                </td>
+                                                <td>{room.name}</td>
+                                                <td className={`room-status ${room.active ? 'active' : 'inactive'}`}>
+                                                    {room.active ? 'Active' : 'Inactive'}
+                                                </td>
+                                                <td>{formatDate(room.createdAt)}</td>
+                                                <td className="actions">
+                                                    <button
+                                                        className={`action-btn ${room.active ? 'deactivate' : 'activate'}`}
+                                                        onClick={() => handleToggleRoomStatus(room.code)}
+                                                    >
+                                                        {room.active ? 'Deactivate' : 'Activate'}
+                                                    </button>
+                                                    <button className="action-btn delete" onClick={() => handleDeleteRoom(room.code)}>
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
@@ -492,6 +687,50 @@ const AdminPanel = () => {
                                 type="button"
                                 className="Btn cancel"
                                 onClick={handleCancelCodeEdit}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Create New Public Room Modal */}
+            {showNewRoomModal && (
+                <div className="modal-overlay">
+                    <div className="modal room-modal">
+                        <h2>Create Public Room</h2>
+                        <p className="room-modal-info">
+                            A unique 6-character code will be generated automatically for this room.
+                        </p>
+
+                        <div className="room-field">
+                            <label>Room Name (Optional)</label>
+                            <input
+                                type="text"
+                                value={newRoomName}
+                                onChange={(e) => setNewRoomName(e.target.value)}
+                                placeholder="Enter a name for this room"
+                                maxLength={50}
+                                className="room-input"
+                            />
+                        </div>
+
+                        <div className="modal-buttons">
+                            <button
+                                type="button"
+                                className="Btn save"
+                                onClick={handleCreateRoom}
+                            >
+                                Create Room
+                            </button>
+                            <button
+                                type="button"
+                                className="Btn cancel"
+                                onClick={() => {
+                                    setShowNewRoomModal(false);
+                                    setNewRoomName('');
+                                }}
                             >
                                 Cancel
                             </button>
