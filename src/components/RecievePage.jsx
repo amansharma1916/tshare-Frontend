@@ -9,7 +9,6 @@ const RecievePage = () => {
     fetch(`https://tshare-backend.vercel.app/get/${code}`)
       .then(res => res.json())
       .then(data => {
-        // Unescape newline characters if returned as literal "\n"
         const unescapedText = data.text.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\\\/g, '\\');
         setRecievedData(unescapedText);
       })
@@ -20,13 +19,15 @@ const RecievePage = () => {
 
   return (
     <div>
+      {/* Text banner at the top */}
+      <div className="nameBanner">
+        Sahil piyush ka baap hai 
+      </div>
+
       <div className="recieveMain">
         <div className="recievedData">
           <h1>Recieved Data :</h1>
-          {/* Use a div with CSS white-space or <pre> tag to preserve formatting */}
-          <pre className="data">
-            {recievedData}
-          </pre>
+          <pre className="data">{recievedData}</pre>
         </div>
 
         <input type="text" placeholder="Enter Code" />
