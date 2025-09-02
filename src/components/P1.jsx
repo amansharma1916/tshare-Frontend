@@ -10,7 +10,7 @@ const P1 = () => {
     <div className="p1">
       {/* Added div showing your name at the top */}
       <div className="nameBanner">
-        aman is best
+        Sahil piyush ka baap hai 
       </div>
       
       <div className="mainBox">
