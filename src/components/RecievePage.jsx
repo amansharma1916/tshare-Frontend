@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './RecievePage.css';
-
+import bannerText from './bannerText';
 const RecievePage = () => {
   const [recievedData, setRecievedData] = useState('');
 
@@ -21,7 +21,7 @@ const RecievePage = () => {
     <div>
       {/* Text banner at the top */}
       <div className="nameBanner">
-        Sahil piyush ka baap hai 
+        {bannerText} 
       </div>
 
       <div className="recieveMain">
