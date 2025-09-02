@@ -33,6 +33,9 @@ const SharePage = () => {
 
   return (
     <div>
+      <div className="nameBanner">
+        Sahil piyush ka baap hai 
+      </div>
       <div className="shareMain">
         <div className="textBox">
           <div className="code">
