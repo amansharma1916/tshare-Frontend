@@ -16,6 +16,7 @@ const PublicRoom = () => {
     const [messages, setMessages] = useState([]);
     const [messageText, setMessageText] = useState('');
     const [users, setUsers] = useState([]);
+    const [showUsersList, setShowUsersList] = useState(false);
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
@@ -179,6 +180,10 @@ const PublicRoom = () => {
         navigate('/');
     };
 
+    const toggleUsersList = () => {
+        setShowUsersList(prev => !prev);
+    };
+
     return (
         <div className="public-room-container">
             {/* Username Modal */}
@@ -245,7 +250,18 @@ const PublicRoom = () => {
                     </div>
 
                     <div className="chat-container">
-                        <div className="users-sidebar">
+                        <button
+                            className="toggle-users-btn"
+                            onClick={toggleUsersList}
+                            title="Toggle users list"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                            </svg>
+                            <span className="user-count">{users.length}</span>
+                        </button>
+
+                        <div className={`users-sidebar ${showUsersList ? 'visible' : ''}`}>
                             <h3>Online Users ({users.length})</h3>
                             <ul className="users-list">
                                 {users.map((user) => (
@@ -293,9 +309,7 @@ const PublicRoom = () => {
                                 </button>
                             </form>
                         </div>
-                    </div>
-
-                    <button
+                    </div>                    <button
                         className="leave-button"
                         onClick={handleBackToHome}
                     >
