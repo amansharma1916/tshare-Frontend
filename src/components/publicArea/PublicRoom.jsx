@@ -27,13 +27,17 @@ const PublicRoom = () => {
 
     // Initialize socket with improved connection handling
     useEffect(() => {
+        // Configure Socket.IO for Vercel serverless environment
         socketRef.current = io(baseUrl, {
             autoConnect: true,
             reconnection: true,
-            reconnectionAttempts: 10,
+            reconnectionAttempts: 5,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
-            timeout: 20000
+            timeout: 20000,
+            transports: ['websocket'], // Force WebSocket transport only
+            forceNew: true,
+            path: '/socket.io/' // Make sure path matches server configuration
         });
 
         // Log connection status for debugging and update UI
@@ -327,18 +331,61 @@ const PublicRoom = () => {
                         className="retry-button"
                         onClick={() => {
                             if (socketRef.current) {
+                                // First try with WebSocket transport only
                                 socketRef.current.disconnect();
-                                socketRef.current.connect();
-
-                                if (isJoined && roomCode && username) {
-                                    setTimeout(() => {
+                                
+                                // Create a new socket connection with updated options
+                                socketRef.current = io(baseUrl, {
+                                    autoConnect: true,
+                                    reconnection: true,
+                                    reconnectionAttempts: 3,
+                                    reconnectionDelay: 1000,
+                                    reconnectionDelayMax: 3000,
+                                    timeout: 20000,
+                                    transports: ['websocket'],
+                                    forceNew: true
+                                });
+                                
+                                // Set a fallback to try polling if WebSocket fails
+                                setTimeout(() => {
+                                    if (!socketRef.current.connected) {
+                                        console.log('WebSocket connection failed, trying polling transport');
+                                        socketRef.current.disconnect();
+                                        socketRef.current = io(baseUrl, {
+                                            autoConnect: true,
+                                            reconnection: true,
+                                            reconnectionAttempts: 3,
+                                            reconnectionDelay: 1000,
+                                            transports: ['polling', 'websocket'],
+                                            forceNew: true
+                                        });
+                                        
+                                        // Reinstate event listeners
+                                        socketRef.current.on('connect', () => {
+                                            setIsOffline(false);
+                                            if (isJoined && roomCode && username) {
+                                                socketRef.current.emit('join-room', { roomCode, username });
+                                            }
+                                        });
+                                        
+                                        socketRef.current.on('connect_error', (err) => {
+                                            console.error('Socket connection error (fallback):', err.message);
+                                            setIsOffline(true);
+                                        });
+                                    }
+                                }, 5000);
+                                
+                                // If successfully connected, rejoin room
+                                socketRef.current.on('connect', () => {
+                                    setIsOffline(false);
+                                    if (isJoined && roomCode && username) {
                                         socketRef.current.emit('join-room', { roomCode, username });
-                                    }, 1000);
-                                }
+                                    }
+                                });
                             }
                         }}
                     >
-                        Retry
+                        Retry Connection
                     </button>
                 </div>
             )}
