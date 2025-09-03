@@ -333,7 +333,7 @@ const PublicRoom = () => {
                             if (socketRef.current) {
                                 // First try with WebSocket transport only
                                 socketRef.current.disconnect();
-                                
+
                                 // Create a new socket connection with updated options
                                 socketRef.current = io(baseUrl, {
                                     autoConnect: true,
@@ -345,7 +345,7 @@ const PublicRoom = () => {
                                     transports: ['websocket'],
                                     forceNew: true
                                 });
-                                
+
                                 // Set a fallback to try polling if WebSocket fails
                                 setTimeout(() => {
                                     if (!socketRef.current.connected) {
@@ -359,7 +359,7 @@ const PublicRoom = () => {
                                             transports: ['polling', 'websocket'],
                                             forceNew: true
                                         });
-                                        
+
                                         // Reinstate event listeners
                                         socketRef.current.on('connect', () => {
                                             setIsOffline(false);
@@ -367,14 +367,14 @@ const PublicRoom = () => {
                                                 socketRef.current.emit('join-room', { roomCode, username });
                                             }
                                         });
-                                        
+
                                         socketRef.current.on('connect_error', (err) => {
                                             console.error('Socket connection error (fallback):', err.message);
                                             setIsOffline(true);
                                         });
                                     }
                                 }, 5000);
-                                
+
                                 // If successfully connected, rejoin room
                                 socketRef.current.on('connect', () => {
                                     setIsOffline(false);
@@ -489,10 +489,10 @@ const PublicRoom = () => {
                                     messages.map((message, index) => (
                                         <div
                                             className={`message ${message.type === 'system'
-                                                    ? 'system-message'
-                                                    : message.username === username
-                                                        ? 'my-message'
-                                                        : ''
+                                                ? 'system-message'
+                                                : message.username === username
+                                                    ? 'my-message'
+                                                    : ''
                                                 }`}
                                             key={index}
                                         >
