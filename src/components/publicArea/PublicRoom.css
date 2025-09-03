@@ -1,33 +1,80 @@
 .public-room-container {
-    max-wid.join-room-form input {
-        width: 100%;
-        padding: 14px 18px;
-        margin-bottom: 20px;
-        border: 2px solid #ced4da;
-        border-radius: 8px;
-        font-size: 16px;
-        transition: all 0.2s ease;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
-        background-color: #5c5d5f;
-        color: #000000;
-    }
-
-    .join-room-form input:focus {
-        border-color: #4361ee;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
-        background-color: #ffffff;
-    }
-
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    font-family: 'Arial',
-    sans-serif;
+    font-family: 'Arial', sans-serif;
     height: 100vh;
     display: flex;
     flex-direction: column;
     background-color: #a4a5a7;
     color: #212529;
+}
+
+.offline-indicator {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 2000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fadeIn 0.3s ease;
+}
+
+.retry-button {
+    background-color: white;
+    color: #dc3545;
+    border: none;
+    border-radius: 15px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.offline-indicator svg {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
 }
 
 .join-room-form {
@@ -58,14 +105,15 @@
 
 .join-room-form input {
     width: 100%;
-    padding: 12px 15px;
+    padding: 14px 18px;
     margin-bottom: 20px;
-    color: black;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
+    border: 2px solid #ced4da;
+    border-radius: 8px;
     font-size: 16px;
-    transition: border-color 0.2s;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+    background-color: white;
+    color: #000000;
 }
 
 .join-room-form input:focus {
@@ -297,13 +345,15 @@
     top: 0;
     bottom: 0;
     right: -250px;
-    transition: right 0.3s ease;
+    transition: all 0.3s ease;
     z-index: 10;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
+    opacity: 0;
 }
 
 .users-sidebar.visible {
     right: 0;
+    opacity: 1;
 }
 
 .toggle-users-btn {
@@ -403,7 +453,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background-color: #2b2a2a;
+    background-color: #f8f9fa;
 }
 
 .message {
@@ -477,7 +527,7 @@
     font-size: 16px;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
     transition: all 0.2s ease;
-    background-color: #2d397c;
+    background-color: white;
     color: #000000;
 }
 
@@ -565,4 +615,163 @@
     color: #999;
     background-color: #f9f9f9;
     border-radius: 8px;
+}
+
+/* Responsive styles for tablets */
+@media (max-width: 768px) {
+    .public-room-container {
+        padding: 15px;
+        height: calc(100vh - 30px);
+    }
+
+    .join-room-form {
+        padding: 20px;
+        margin: 20px auto;
+    }
+
+    .room-header {
+        padding: 12px 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .chat-container {
+        height: calc(100vh - 170px);
+    }
+
+    .users-sidebar {
+        width: 220px;
+        right: -220px;
+    }
+
+    .message-form {
+        padding: 12px;
+    }
+
+    .message-form input {
+        padding: 12px 15px;
+        font-size: 15px;
+    }
+
+    .message-form button {
+        padding: 10px 18px;
+        font-size: 15px;
+    }
+
+    .username-modal {
+        width: 95%;
+        padding: 25px 20px;
+    }
+}
+
+/* Responsive styles for mobile phones */
+@media (max-width: 480px) {
+    .public-room-container {
+        padding: 10px;
+        height: calc(100vh - 20px);
+    }
+
+    .join-room-form {
+        padding: 15px;
+        margin: 10px auto;
+        max-width: 100%;
+        border-radius: 8px;
+    }
+
+    .join-room-form h2 {
+        font-size: 20px;
+    }
+
+    .join-room-info {
+        font-size: 14px;
+    }
+
+    .join-room-form input,
+    .username-modal input {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .join-room-form button,
+    .back-button,
+    .username-modal button {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .room-header h2 {
+        font-size: 16px;
+    }
+
+    .room-code {
+        font-size: 12px;
+    }
+
+    .chat-container {
+        height: calc(100vh - 150px);
+    }
+
+    .users-sidebar {
+        width: 200px;
+        right: -200px;
+        padding: 12px;
+    }
+
+    .users-sidebar h3 {
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+
+    .users-list li {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+
+    .message {
+        max-width: 85%;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .message-form {
+        padding: 8px;
+    }
+
+    .message-form input {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .message-form button {
+        padding: 8px 12px;
+        font-size: 14px;
+        margin-left: 6px;
+    }
+
+    .toggle-users-btn {
+        width: 32px;
+        height: 32px;
+        top: 10px;
+        right: 10px;
+    }
+
+    .username-modal {
+        padding: 20px 15px;
+    }
+
+    .username-modal h2 {
+        font-size: 20px;
+    }
+
+    .username-modal p {
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    .leave-button {
+        padding: 8px 16px;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
 }
