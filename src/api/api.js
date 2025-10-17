@@ -15,6 +15,13 @@ export const endpoints = {
     adminUpdateCode: (id) => `${API_URL}/admin/texts/${id}/code`,
     adminRegenerateCode: (id) => `${API_URL}/admin/texts/${id}/regenerate-code`,
     adminCheckCode: (code) => `${API_URL}/admin/check-code/${code}`,
+
+    // Public Room endpoints
+    adminPublicRooms: `${API_URL}/admin/public-rooms`,
+    adminDeletePublicRoom: (code) => `${API_URL}/admin/public-rooms/${code}`,
+    adminTogglePublicRoomStatus: (code) => `${API_URL}/admin/public-rooms/${code}/toggle-status`,
+    validatePublicRoom: (code) => `${API_URL}/public-room/validate/${code}`,
+    getPublicRoomMessages: (code) => `${API_URL}/public-room/${code}/messages`,
 };
 
 export default {

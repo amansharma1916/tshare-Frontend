@@ -29,6 +29,7 @@ const AdminPanel = () => {
             window.location.href = '/admin/login';
         }
         fetchTexts();
+        fetchPublicRooms();
     }, []);
 
     const fetchTexts = async () => {
@@ -294,7 +295,103 @@ const AdminPanel = () => {
         return date.toLocaleString();
     };
 
-    // Public Room functionality has been removed
+    // Public Room functionality
+    const [publicRooms, setPublicRooms] = useState([]);
+    const [publicRoomName, setPublicRoomName] = useState('');
+    const [showPublicRoomModal, setShowPublicRoomModal] = useState(false);
+    const [publicRoomsLoading, setPublicRoomsLoading] = useState(false);
+
+    const fetchPublicRooms = async () => {
+        setPublicRoomsLoading(true);
+        try {
+            const response = await fetch(endpoints.adminPublicRooms);
+            const data = await response.json();
+
+            if (data.success) {
+                setPublicRooms(data.rooms);
+            } else {
+                showActionMessage('Failed to fetch public rooms', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        } finally {
+            setPublicRoomsLoading(false);
+        }
+    };
+
+    const handleCreatePublicRoom = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(endpoints.adminPublicRooms, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: publicRoomName }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setPublicRooms([data.room, ...publicRooms]);
+                setShowPublicRoomModal(false);
+                setPublicRoomName('');
+                showActionMessage(`Public room created with code: ${data.room.code}`, 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to create public room', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
+
+    const handleDeletePublicRoom = async (code) => {
+        if (!window.confirm('Are you sure you want to delete this public room? All messages will be permanently deleted.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoints.adminDeletePublicRoom(code), {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setPublicRooms(publicRooms.filter(room => room.code !== code));
+                showActionMessage('Public room deleted successfully', 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to delete public room', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
+
+    const handleToggleRoomStatus = async (code) => {
+        try {
+            const response = await fetch(endpoints.adminTogglePublicRoomStatus(code), {
+                method: 'PUT',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setPublicRooms(publicRooms.map(room =>
+                    room.code === code ? { ...room, active: data.active } : room
+                ));
+                showActionMessage(`Room ${data.active ? 'activated' : 'deactivated'} successfully`, 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to update room status', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
 
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text)
@@ -314,6 +411,9 @@ const AdminPanel = () => {
                 </button>
                 <button className="Btn delete-all" onClick={handleDeleteAllTexts}>
                     Delete All Texts
+                </button>
+                <button className="Btn create-public" onClick={() => setShowPublicRoomModal(true)}>
+                    Create Public Room
                 </button>
                 <button className="Btn change-password" onClick={() => setShowPasswordModal(true)}>
                     Change Password
@@ -370,6 +470,66 @@ const AdminPanel = () => {
                                                 New Code
                                             </button>
                                             <button className="action-btn delete" onClick={() => handleDeleteText(text.id)}>
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                <h1 className="section-header">Public Rooms ({publicRooms.length})</h1>
+                <button className="Btn create-public-room" onClick={() => setShowPublicRoomModal(true)}>
+                    Create New Public Room
+                </button>
+
+                {publicRoomsLoading ? (
+                    <div className="loading">Loading public rooms...</div>
+                ) : publicRooms.length === 0 ? (
+                    <div className="no-data">No public rooms found</div>
+                ) : (
+                    <div className="public-rooms-container">
+                        <table className="public-rooms-table">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {publicRooms.map(room => (
+                                    <tr key={room.code} className={room.active ? 'room-active' : 'room-inactive'}>
+                                        <td>{room.code}</td>
+                                        <td>{room.name}</td>
+                                        <td>
+                                            <span className={`status-badge ${room.active ? 'active' : 'inactive'}`}>
+                                                {room.active ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td>{formatDate(room.createdAt)}</td>
+                                        <td className="actions">
+                                            <button
+                                                className="action-btn copy-code"
+                                                onClick={() => copyToClipboard(room.code)}
+                                                title="Copy room code"
+                                            >
+                                                Copy Code
+                                            </button>
+                                            <button
+                                                className={`action-btn ${room.active ? 'deactivate' : 'activate'}`}
+                                                onClick={() => handleToggleRoomStatus(room.code)}
+                                            >
+                                                {room.active ? 'Deactivate' : 'Activate'}
+                                            </button>
+                                            <button
+                                                className="action-btn delete"
+                                                onClick={() => handleDeletePublicRoom(room.code)}
+                                            >
                                                 Delete
                                             </button>
                                         </td>
@@ -510,7 +670,45 @@ const AdminPanel = () => {
                 </div>
             )}
 
-            {/* Public Room Modal removed */}
+            {/* Public Room Modal */}
+            {showPublicRoomModal && (
+                <div className="modal-overlay">
+                    <div className="modal public-room-modal">
+                        <h2>Create New Public Room</h2>
+                        <form onSubmit={handleCreatePublicRoom}>
+                            <div className="room-field">
+                                <label>Room Name (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={publicRoomName}
+                                    onChange={(e) => setPublicRoomName(e.target.value)}
+                                    placeholder="Enter a name for this room"
+                                    className="room-name-input"
+                                    maxLength={50}
+                                />
+                                <p className="room-info">
+                                    A random 4-digit code will be generated automatically.<br />
+                                    If no name is provided, a default name will be used.
+                                </p>
+                            </div>
+
+                            <div className="modal-buttons">
+                                <button type="submit" className="Btn save">Create Room</button>
+                                <button
+                                    type="button"
+                                    className="Btn cancel"
+                                    onClick={() => {
+                                        setShowPublicRoomModal(false);
+                                        setPublicRoomName('');
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

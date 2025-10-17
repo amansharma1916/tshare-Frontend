@@ -11,6 +11,10 @@ const P1 = () => {
     window.location.href = '/recievePage'
   }
 
+  const publicRoomPage = () => {
+    window.location.href = '/public-room'
+  }
+
   return (
     <div className="p1">
       <div className="nameBanner">
@@ -30,6 +34,16 @@ const P1 = () => {
             <span className="btn-text">Receive</span>
           </button>
         </div>
+      </div>
+
+      <div className="publicRoomBtn">
+        <button
+          className='Btn publicRoom'
+          onClick={publicRoomPage}
+          title="Join a public chat room"
+        >
+          <span className="btn-text">Public Rooms</span>
+        </button>
       </div>
 
       <div className="footer-text">
