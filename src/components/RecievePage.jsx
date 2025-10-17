@@ -70,7 +70,10 @@ const RecievePage = () => {
         <div className="receiveContainer">
           <div className="receivedData">
             <h1>Received Data</h1>
-            <pre className="data">{receivedData || 'Enter a code below to fetch shared content...'}</pre>
+            {/* Here we ensure newlines are respected by using <pre> */}
+            <pre className="data">
+              {receivedData || 'Enter a code below to fetch shared content...'}
+            </pre>
           </div>
 
           <div className="input-group">
