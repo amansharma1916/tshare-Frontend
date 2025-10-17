@@ -6,7 +6,6 @@ import SharePage from './components/SharePage.jsx'
 import RecievePage from './components/RecievePage.jsx'
 import AdminLogin from './components/AdminLogin.jsx'
 import AdminPanel from './components/AdminPanel.jsx'
-import PublicRoom from './components/publicArea/PublicRoom.jsx'
 
 function App() {
   return (
@@ -18,7 +17,6 @@ function App() {
           <Route path='/recievePage' element={<RecievePage />}></Route>
           <Route path='/admin/login' element={<AdminLogin />}></Route>
           <Route path='/admin/panel' element={<AdminPanel />}></Route>
-          <Route path='/public-room' element={<PublicRoom />}></Route>
         </Routes>
       </BrowserRouter>
 

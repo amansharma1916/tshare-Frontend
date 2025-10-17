@@ -30,11 +30,6 @@ const P1 = () => {
             <span className="btn-text">Receive</span>
           </button>
         </div>
-        <div className="publicRoom" onClick={() => window.location.href = '/public-room'} title="Join a public room">
-          <button className='Btn public-btn' onClick={() => window.location.href = '/public-room'}>
-            <span className="btn-text">Public Room</span>
-          </button>
-        </div>
       </div>
 
       <div className="footer-text">
@@ -43,7 +38,6 @@ const P1 = () => {
 
       <div className="footer-links">
         <a href="/admin/login" title="Admin Panel" className="admin-link">Admin</a>
-        <a href="/public" title="Public Rooms" className="public-link">Public Rooms</a>
       </div>
     </div>
   )
