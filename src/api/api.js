@@ -1,5 +1,8 @@
 // src/api/api.js
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://tshare-backend.vercel.app';
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+if (!API_URL) {
+    throw new Error('Missing VITE_BACKEND_URL. Set it in your frontend .env file.');
+}
 
 export const baseUrl = API_URL;
 
