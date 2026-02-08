@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import './App.css'
 import P1 from './components/P1.jsx'
 import { Link, Routes, Route, NavLink, BrowserRouter } from 'react-router-dom'
@@ -8,8 +8,32 @@ import RecievePage from './components/RecievePage.jsx'
 import AdminLogin from './components/AdminLogin.jsx'
 import AdminPanel from './components/AdminPanel.jsx'
 import PublicRoom from './components/publicArea/PublicRoom.jsx'
+import { endpoints } from './api/api.js'
 
 function App() {
+  useEffect(() => {
+    const controller = new AbortController()
+
+    const wakeServer = async () => {
+      try {
+        await fetch(endpoints.wakeServer, {
+          method: 'GET',
+          signal: controller.signal,
+          keepalive: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      } catch (error) {
+        // Fail silently to avoid blocking UI if the server is cold.
+      }
+    }
+
+    wakeServer()
+
+    return () => controller.abort()
+  }, [])
+
   return (
     <>
       <BrowserRouter>

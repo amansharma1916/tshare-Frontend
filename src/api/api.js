@@ -6,6 +6,7 @@ if (!API_URL) {
 export const baseUrl = API_URL;
 
 export const endpoints = {
+    wakeServer: `${API_URL}/wake-server`,
     save: `${API_URL}/save`,
     get: (id) => `${API_URL}/get/${id}`,
     uploadImage: `${API_URL}/image/upload`,
