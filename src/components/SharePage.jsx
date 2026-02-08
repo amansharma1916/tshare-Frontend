@@ -10,7 +10,6 @@ const SharePage = () => {
   const [copied, setCopied] = useState(false);
   const [socket, setSocket] = useState(null);
 
-  // Initialize socket connection
   useEffect(() => {
     const newSocket = io(baseUrl);
     setSocket(newSocket);
@@ -41,14 +40,12 @@ const SharePage = () => {
         setCode(data.id);
         document.getElementById('sharePageInput').value = '';
 
-        // Emit the text update via socket.io to notify all connected clients
         if (socket) {
           socket.emit('text-update', {
             textId: data.id,
             text: text
           });
         }
-        // Don't show alert, the UI will show the code
       })
       .catch(error => {
         console.error('Error:', error);
@@ -120,6 +117,13 @@ const SharePage = () => {
             </button>
 
             <button
+              className="Btn image-share-btn"
+              onClick={() => { window.location.href = '/share-image'; }}
+            >
+              Share Image
+            </button>
+
+            <button
               className="Btn"
               id="backBtn"
               onClick={() => { window.location.href = '/'; }}
@@ -134,3 +138,4 @@ const SharePage = () => {
 };
 
 export default SharePage;
+

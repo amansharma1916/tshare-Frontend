@@ -1,7 +1,7 @@
-/* Import Google Fonts */
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Source+Code+Pro:wght@400;500&display=swap');
 
-/* CSS Reset */
+
 *,
 *::before,
 *::after {
@@ -68,7 +68,7 @@ h6 {
     overflow-wrap: break-word;
 }
 
-/* Accessibility: Remove animations for people who've requested reduced motion */
+
 @media (prefers-reduced-motion: reduce) {
 
     *,
@@ -81,7 +81,7 @@ h6 {
     }
 }
 
-/* Custom scrollbar for webkit browsers */
+
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -102,14 +102,14 @@ h6 {
     border-width: 1px;
 }
 
-/* App-specific global styles */
+
 #root {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Utility classes */
+
 .container {
     width: 100%;
     max-width: 1200px;

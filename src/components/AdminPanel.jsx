@@ -5,8 +5,11 @@ import { endpoints } from '../api/api';
 
 const AdminPanel = () => {
     const [texts, setTexts] = useState([]);
+    const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [imagesLoading, setImagesLoading] = useState(true);
     const [error, setError] = useState('');
+    const [imagesError, setImagesError] = useState('');
     const [editingText, setEditingText] = useState(null);
     const [editedContent, setEditedContent] = useState('');
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -14,23 +17,30 @@ const AdminPanel = () => {
     const [editingCode, setEditingCode] = useState(null);
     const [newCode, setNewCode] = useState('');
     const [codeError, setCodeError] = useState('');
+    const [showImageCodeModal, setShowImageCodeModal] = useState(false);
+    const [editingImage, setEditingImage] = useState(null);
+    const [newImageCode, setNewImageCode] = useState('');
+    const [imageCodeError, setImageCodeError] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [actionMessage, setActionMessage] = useState({ text: '', type: '' });
 
-    // States for admin panel
 
-    // Check authentication status
     useEffect(() => {
         const isAuthenticated = sessionStorage.getItem('adminAuthenticated') === 'true';
         if (!isAuthenticated) {
             window.location.href = '/admin/login';
         }
-        fetchTexts();
-        fetchPublicRooms();
+        refreshAll();
     }, []);
+
+    const refreshAll = () => {
+        fetchTexts();
+        fetchImages();
+        fetchPublicRooms();
+    };
 
     const fetchTexts = async () => {
         setLoading(true);
@@ -50,6 +60,27 @@ const AdminPanel = () => {
             setError('Failed to connect to server. Please try again.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchImages = async () => {
+        setImagesLoading(true);
+        setImagesError('');
+
+        try {
+            const response = await fetch(endpoints.adminImages);
+            const data = await response.json();
+
+            if (data.success) {
+                setImages(data.images);
+            } else {
+                setImagesError('Failed to fetch images');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setImagesError('Failed to connect to server. Please try again.');
+        } finally {
+            setImagesLoading(false);
         }
     };
 
@@ -94,6 +125,54 @@ const AdminPanel = () => {
                 showActionMessage('All texts deleted successfully', 'success');
             } else {
                 showActionMessage(data.message || 'Failed to delete texts', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
+
+    const handleDeleteImage = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this image?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoints.adminDeleteImage(id), {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setImages(images.filter(image => image.id !== id));
+                showActionMessage('Image deleted successfully', 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to delete image', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
+
+    const handleDeleteAllImages = async () => {
+        if (!window.confirm('Are you sure you want to delete ALL images? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoints.adminDeleteAllImages, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setImages([]);
+                showActionMessage('All images deleted successfully', 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to delete images', 'error');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -151,7 +230,6 @@ const AdminPanel = () => {
         if (!editingCode) return;
         setCodeError('');
 
-        // Validate the code
         if (!newCode || isNaN(newCode) || newCode.length !== 4 || parseInt(newCode) < 1000 || parseInt(newCode) > 9999) {
             setCodeError('Code must be a 4-digit number between 1000 and 9999');
             return;
@@ -169,7 +247,6 @@ const AdminPanel = () => {
             const data = await response.json();
 
             if (data.success) {
-                // Update the text in the local state with the new code
                 setTexts(texts.map(text =>
                     text.id === editingCode.id ? { ...text, id: parseInt(newCode) } : text
                 ));
@@ -202,7 +279,6 @@ const AdminPanel = () => {
             const data = await response.json();
 
             if (data.success) {
-                // Update the text in the local state with the new code
                 setTexts(texts.map(text =>
                     text.id === parseInt(data.oldCode) ? { ...text, id: data.newCode } : text
                 ));
@@ -240,6 +316,105 @@ const AdminPanel = () => {
         setEditingCode(null);
         setNewCode('');
         setCodeError('');
+    };
+
+    const handleEditImageCode = (image) => {
+        setEditingImage(image);
+        setNewImageCode(image.id.toString());
+        setImageCodeError('');
+        setShowImageCodeModal(true);
+    };
+
+    const handleUpdateImageCode = async () => {
+        if (!editingImage) return;
+        setImageCodeError('');
+
+        if (!newImageCode || isNaN(newImageCode) || newImageCode.length !== 4 || parseInt(newImageCode) < 1000 || parseInt(newImageCode) > 9999) {
+            setImageCodeError('Code must be a 4-digit number between 1000 and 9999');
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoints.adminUpdateImageCode(editingImage.id), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ newCode: parseInt(newImageCode) }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setImages(images.map(image =>
+                    image.id === editingImage.id ? { ...image, id: parseInt(newImageCode) } : image
+                ));
+                setShowImageCodeModal(false);
+                setEditingImage(null);
+                setNewImageCode('');
+                showActionMessage('Image code updated successfully', 'success');
+            } else {
+                setImageCodeError(data.message || 'Failed to update code');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setImageCodeError('Failed to connect to server');
+        }
+    };
+
+    const handleCheckImageCodeAvailability = async () => {
+        if (!newImageCode || newImageCode.length !== 4) return;
+
+        try {
+            const response = await fetch(endpoints.adminCheckImageCode(newImageCode));
+            const data = await response.json();
+
+            if (data.success) {
+                if (!data.isAvailable && parseInt(newImageCode) !== editingImage.id) {
+                    setImageCodeError('This code is already in use. Please choose a different code.');
+                } else {
+                    setImageCodeError('');
+                }
+            }
+        } catch (error) {
+            console.error('Error checking image code availability:', error);
+        }
+    };
+
+    const handleRegenerateImageCode = async (id) => {
+        if (!window.confirm('Are you sure you want to generate a new random code for this image?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoints.adminRegenerateImageCode(id), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setImages(images.map(image =>
+                    image.id === parseInt(data.oldCode) ? { ...image, id: data.newCode } : image
+                ));
+                showActionMessage(`Image code regenerated: ${data.newCode}`, 'success');
+            } else {
+                showActionMessage(data.message || 'Failed to regenerate image code', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showActionMessage('Failed to connect to server', 'error');
+        }
+    };
+
+    const handleCancelImageCodeEdit = () => {
+        setShowImageCodeModal(false);
+        setEditingImage(null);
+        setNewImageCode('');
+        setImageCodeError('');
     };
 
     const handleChangePassword = async (e) => {
@@ -295,7 +470,14 @@ const AdminPanel = () => {
         return date.toLocaleString();
     };
 
-    // Public Room functionality
+    const formatFileSize = (size) => {
+        if (!size && size !== 0) return 'N/A';
+        if (size < 1024) return `${size} B`;
+        if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+        if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+        return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+    };
+
     const [publicRooms, setPublicRooms] = useState([]);
     const [publicRoomName, setPublicRoomName] = useState('');
     const [showPublicRoomModal, setShowPublicRoomModal] = useState(false);
@@ -406,11 +588,14 @@ const AdminPanel = () => {
             </div>
 
             <div className="admin-controls">
-                <button className="Btn refresh" onClick={fetchTexts}>
+                <button className="Btn refresh" onClick={refreshAll}>
                     Refresh Data
                 </button>
                 <button className="Btn delete-all" onClick={handleDeleteAllTexts}>
                     Delete All Texts
+                </button>
+                <button className="Btn delete-all" onClick={handleDeleteAllImages}>
+                    Delete All Images
                 </button>
                 <button className="Btn create-public" onClick={() => setShowPublicRoomModal(true)}>
                     Create Public Room
@@ -470,6 +655,80 @@ const AdminPanel = () => {
                                                 New Code
                                             </button>
                                             <button className="action-btn delete" onClick={() => handleDeleteText(text.id)}>
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                <h1 className="section-header">Shared Images ({images.length})</h1>
+
+                {imagesLoading ? (
+                    <div className="loading">Loading images...</div>
+                ) : imagesError ? (
+                    <div className="error-message">{imagesError}</div>
+                ) : images.length === 0 ? (
+                    <div className="no-data">No images found</div>
+                ) : (
+                    <div className="texts-table-container">
+                        <table className="texts-table">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Preview</th>
+                                    <th>File</th>
+                                    <th>Size</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {images.map(image => (
+                                    <tr key={image.id}>
+                                        <td>{image.id}</td>
+                                        <td>
+                                            <div className="image-thumb">
+                                                <img src={image.url} alt={image.originalName || 'Shared'} />
+                                            </div>
+                                        </td>
+                                        <td className="text-content">
+                                            {image.originalName || 'Shared image'}
+                                        </td>
+                                        <td>{formatFileSize(image.size)}</td>
+                                        <td>{formatDate(image.createdAt)}</td>
+                                        <td className="actions">
+                                            <button
+                                                className="action-btn copy-code"
+                                                onClick={() => copyToClipboard(image.id.toString())}
+                                            >
+                                                Copy Code
+                                            </button>
+                                            <button
+                                                className="action-btn edit"
+                                                onClick={() => window.open(image.url, '_blank', 'noopener')}
+                                            >
+                                                View
+                                            </button>
+                                            <button
+                                                className="action-btn edit-code"
+                                                onClick={() => handleEditImageCode(image)}
+                                            >
+                                                Edit Code
+                                            </button>
+                                            <button
+                                                className="action-btn regenerate-code"
+                                                onClick={() => handleRegenerateImageCode(image.id)}
+                                            >
+                                                New Code
+                                            </button>
+                                            <button
+                                                className="action-btn delete"
+                                                onClick={() => handleDeleteImage(image.id)}
+                                            >
                                                 Delete
                                             </button>
                                         </td>
@@ -541,7 +800,7 @@ const AdminPanel = () => {
                 )}
             </div>
 
-            {/* Edit Modal */}
+            {}
             {editingText && (
                 <div className="modal-overlay">
                     <div className="modal edit-modal">
@@ -559,7 +818,7 @@ const AdminPanel = () => {
                 </div>
             )}
 
-            {/* Change Password Modal */}
+            {}
             {showPasswordModal && (
                 <div className="modal-overlay">
                     <div className="modal password-modal">
@@ -612,7 +871,7 @@ const AdminPanel = () => {
                 </div>
             )}
 
-            {/* Edit Code Modal */}
+            {}
             {showCodeModal && (
                 <div className="modal-overlay">
                     <div className="modal code-modal">
@@ -632,7 +891,6 @@ const AdminPanel = () => {
                                 type="text"
                                 value={newCode}
                                 onChange={(e) => {
-                                    // Only allow digits and limit to 4 characters
                                     const value = e.target.value.replace(/\D/g, '').slice(0, 4);
                                     setNewCode(value);
                                 }}
@@ -670,7 +928,61 @@ const AdminPanel = () => {
                 </div>
             )}
 
-            {/* Public Room Modal */}
+            {showImageCodeModal && (
+                <div className="modal-overlay">
+                    <div className="modal code-modal">
+                        <h2>Edit Image Code</h2>
+                        <div className="code-info">
+                            <p>Current file: <span className="highlight">
+                                {editingImage?.originalName || 'Shared image'}
+                            </span></p>
+                            <p>Current code: <span className="highlight">{editingImage?.id}</span></p>
+                        </div>
+
+                        <div className="code-field">
+                            <label>New Code (4 digits)</label>
+                            <input
+                                type="text"
+                                value={newImageCode}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                    setNewImageCode(value);
+                                }}
+                                onBlur={handleCheckImageCodeAvailability}
+                                maxLength={4}
+                                pattern="\d{4}"
+                                placeholder="Enter a 4-digit code"
+                                required
+                                className="code-input"
+                            />
+                        </div>
+
+                        {imageCodeError && (
+                            <div className="error-message">{imageCodeError}</div>
+                        )}
+
+                        <div className="modal-buttons">
+                            <button
+                                type="button"
+                                className="Btn save"
+                                onClick={handleUpdateImageCode}
+                                disabled={!newImageCode || newImageCode.length !== 4 || imageCodeError}
+                            >
+                                Update Code
+                            </button>
+                            <button
+                                type="button"
+                                className="Btn cancel"
+                                onClick={handleCancelImageCodeEdit}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {}
             {showPublicRoomModal && (
                 <div className="modal-overlay">
                     <div className="modal public-room-modal">
@@ -714,3 +1026,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+

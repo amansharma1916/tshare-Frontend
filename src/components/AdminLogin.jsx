@@ -31,9 +31,7 @@ const AdminLogin = () => {
             const data = await response.json();
 
             if (data.success) {
-                // Store authentication state in session storage
                 sessionStorage.setItem('adminAuthenticated', 'true');
-                // Redirect to admin panel
                 window.location.href = '/admin/panel';
             } else {
                 setError(data.message || 'Invalid password');
@@ -92,3 +90,4 @@ const AdminLogin = () => {
 };
 
 export default AdminLogin;
+

@@ -27,9 +27,7 @@ const PublicRoom = () => {
     const location = useLocation();
     const typingTimeoutRef = useRef(null);
 
-    // Initialize socket with improved connection handling
     useEffect(() => {
-        // Configure Socket.IO for Vercel serverless environment
         socketRef.current = io(baseUrl, {
             autoConnect: true,
             reconnection: true,
@@ -43,12 +41,10 @@ const PublicRoom = () => {
             extraHeaders: { "Access-Control-Allow-Origin": "*" }
         });
 
-        // Log connection status for debugging and update UI
         socketRef.current.on('connect_error', (err) => {
             console.error('Socket connection error:', err.message);
             setIsOffline(true);
 
-            // If websocket fails, try polling transport
             if (socketRef.current.io.opts.transports[0] === 'websocket') {
                 console.log('Switching to polling transport');
                 socketRef.current.io.opts.transports = ['polling', 'websocket'];
@@ -73,12 +69,10 @@ const PublicRoom = () => {
         };
     }, []);
 
-    // Scroll messages to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    // Extract room code from URL
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const code = params.get('code');
@@ -93,12 +87,10 @@ const PublicRoom = () => {
         }
     }, [location.search]);
 
-    // Socket event listeners (join/reconnect/messages/etc.)
     useEffect(() => {
         if (!socketRef.current) return;
         const s = socketRef.current;
 
-        // On connect or reconnect -> rejoin room if possible
         const handleConnect = () => {
             console.log('Socket connected:', s.id);
             if (roomCode && username) {
@@ -154,7 +146,6 @@ const PublicRoom = () => {
 
         const handleTypingStart = (data) => {
             setTypingUsers(prev => {
-                // Only add if not already in the list
                 if (!prev.some(user => user.username === data.username)) {
                     return [...prev, data];
                 }
@@ -189,7 +180,6 @@ const PublicRoom = () => {
         };
     }, [roomCode, username, navigate, location.pathname]);
 
-    // Join room with improved error handling and timeout management
     const handleJoinRoom = async (code = roomCode, name = username) => {
         if (!socketRef.current || !name) return;
 
@@ -198,7 +188,6 @@ const PublicRoom = () => {
         localStorage.setItem('chat-username', name);
 
         try {
-            // Set a timeout for the fetch request
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -210,10 +199,8 @@ const PublicRoom = () => {
             const data = await res.json();
 
             if (data.success) {
-                // Set up a response timeout for socket emit
                 let responseReceived = false;
 
-                // Listen for successful join or error response
                 const onRoomJoined = () => {
                     responseReceived = true;
                     socketRef.current.off('room-error', onRoomError);
@@ -226,14 +213,11 @@ const PublicRoom = () => {
                     setIsLoading(false);
                 };
 
-                // Add temporary listeners
                 socketRef.current.once('room-joined', onRoomJoined);
                 socketRef.current.once('room-error', onRoomError);
 
-                // Emit join request
                 socketRef.current.emit('join-room', { roomCode: code, username: name });
 
-                // Set a timeout for response
                 setTimeout(() => {
                     if (!responseReceived) {
                         socketRef.current.off('room-joined', onRoomJoined);
@@ -287,42 +271,34 @@ const PublicRoom = () => {
 
         setIsSendingMessage(true);
 
-        // Store message for potential retry
         const messageToSend = {
             roomCode,
             text: messageText,
             username
         };
 
-        // Timeout to detect if message send is taking too long
         const timeoutId = setTimeout(() => {
-            // If no response after 5 seconds, assume connection issue
             console.error('Message acknowledgment timeout');
             setIsOffline(true);
             setIsSendingMessage(false);
         }, 5000);
 
-        // Prepare message acknowledgment handler
         const handleAck = (success) => {
             clearTimeout(timeoutId);
             setIsSendingMessage(false);
 
             if (success === false) {
                 console.error('Message sending failed on server');
-                // Could add a retry mechanism here
             }
         };
 
-        // Clear text field immediately for better UX
         setMessageText('');
         setIsTyping(false);
 
-        // Stop typing indicator
         if (socketRef.current) {
             socketRef.current.emit('typing-stop', { roomCode, username });
         }
 
-        // Send the message with acknowledgment
         try {
             socketRef.current.emit('send-message', messageToSend, handleAck);
         } catch (error) {
@@ -330,8 +306,6 @@ const PublicRoom = () => {
             setIsSendingMessage(false);
             setIsOffline(true);
 
-            // If an error occurs during emit, add message to local state anyway
-            // to improve user experience (optimistic UI update)
             setMessages(prev => [...prev, {
                 ...messageToSend,
                 timestamp: new Date(),
@@ -341,22 +315,18 @@ const PublicRoom = () => {
         }
     };
 
-    // Handle typing indicator
     const handleTyping = (e) => {
         setMessageText(e.target.value);
         
-        // Clear previous timeout
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current);
         }
         
-        // If user is not already typing, emit start event
         if (!isTyping && socketRef.current) {
             setIsTyping(true);
             socketRef.current.emit('typing-start', { roomCode, username });
         }
         
-        // Set timeout to stop typing indicator after 1 second of inactivity
         typingTimeoutRef.current = setTimeout(() => {
             if (socketRef.current) {
                 socketRef.current.emit('typing-stop', { roomCode, username });
@@ -373,7 +343,6 @@ const PublicRoom = () => {
         setShowUsersList(prev => !prev);
     };
 
-    // Support for touch swipe to show/hide users sidebar
     const touchStartRef = useRef(null);
     const handleTouchStart = (e) => {
         touchStartRef.current = e.touches[0].clientX;
@@ -385,13 +354,10 @@ const PublicRoom = () => {
         const touchEnd = e.changedTouches[0].clientX;
         const diff = touchStartRef.current - touchEnd;
 
-        // Swipe threshold of 50px
         if (Math.abs(diff) > 50) {
             if (diff > 0) {
-                // Swipe left to show users sidebar
                 setShowUsersList(true);
             } else {
-                // Swipe right to hide users sidebar
                 setShowUsersList(false);
             }
         }
@@ -399,20 +365,16 @@ const PublicRoom = () => {
         touchStartRef.current = null;
     };
 
-    // Generate colors based on username (consistent for each user)
     const getUserColor = (username) => {
-        // Simple hash function to generate a consistent color
         let hash = 0;
         for (let i = 0; i < username.length; i++) {
             hash = username.charCodeAt(i) + ((hash << 5) - hash);
         }
 
         const hue = Math.abs(hash % 360);
-        // Use a high saturation and light value for good contrast
         return `hsl(${hue}, 65%, 55%)`;
     };
 
-    // Format timestamp
     const formatTime = (timestamp) => {
         const date = new Date(timestamp);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -430,7 +392,7 @@ const PublicRoom = () => {
 
     return (
         <div className="public-room-container">
-            {/* Offline Indicator */}
+            {}
             {isOffline && (
                 <div className="offline-indicator">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -443,10 +405,8 @@ const PublicRoom = () => {
                         className="retry-button"
                         onClick={() => {
                             if (socketRef.current) {
-                                // First try with both transports available
                                 socketRef.current.disconnect();
 
-                                // Create a new socket connection with updated options
                                 socketRef.current = io(baseUrl, {
                                     autoConnect: true,
                                     reconnection: true,
@@ -459,7 +419,6 @@ const PublicRoom = () => {
                                     path: '/socket.io/'
                                 });
 
-                                // Set event handlers
                                 socketRef.current.on('connect_error', (err) => {
                                     console.error('Socket connection error on retry:', err.message);
                                     setIsOffline(true);
@@ -470,20 +429,16 @@ const PublicRoom = () => {
                                     setIsOffline(true);
                                 });
 
-                                // If successfully connected, rejoin room
                                 socketRef.current.on('connect', () => {
                                     console.log('Socket reconnected with transport:',
                                         socketRef.current.io.engine.transport.name);
                                     setIsOffline(false);
 
                                     if (isJoined && roomCode && username) {
-                                        // When we reconnect, we need to rejoin the room
                                         socketRef.current.emit('join-room', { roomCode, username });
 
-                                        // Set up event listeners for room-specific events
                                         socketRef.current.once('room-joined', (data) => {
                                             console.log('Successfully rejoined room');
-                                            // Merge existing messages with any new ones
                                             if (data.messages && data.messages.length > 0) {
                                                 const lastLocalMessageTime = messages.length > 0 ?
                                                     new Date(messages[messages.length - 1].timestamp).getTime() : 0;
@@ -501,7 +456,6 @@ const PublicRoom = () => {
 
                                         socketRef.current.once('room-error', (errorMsg) => {
                                             console.error('Error rejoining room:', errorMsg);
-                                            // If we can't rejoin, go back to the join screen
                                             setIsJoined(false);
                                         });
                                     }
@@ -514,7 +468,7 @@ const PublicRoom = () => {
                 </div>
             )}
 
-            {/* Username Modal */}
+            {}
             {showUsernameModal && (
                 <div className="modal-overlay">
                     <div className="username-modal">
@@ -646,7 +600,7 @@ const PublicRoom = () => {
                                                 </div>
                                             </div>
                                         ))}
-                                        {/* Typing indicators */}
+                                        {}
                                         {typingUsers.length > 0 && typingUsers.some(user => user.username !== username) && (
                                             <div className="message system-message">
                                                 {typingUsers

@@ -6,6 +6,9 @@ import { endpoints } from '../api/api';
 const RecievePage = () => {
   const [receivedData, setReceivedData] = useState('');
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageData, setImageData] = useState(null);
+  const [imageCode, setImageCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   const inputRef = useRef(null);
@@ -19,6 +22,8 @@ const RecievePage = () => {
 
     setLoading(true);
     setError('');
+    setImageData(null);
+    setImageCode('');
 
     fetch(endpoints.get(code))
       .then(res => {
@@ -47,6 +52,41 @@ const RecievePage = () => {
       });
   };
 
+  const receiveImage = () => {
+    const code = inputRef.current.value.trim();
+    if (!code) {
+      setError('Please enter a code');
+      return;
+    }
+
+    setImageLoading(true);
+    setError('');
+    setReceivedData('');
+
+    fetch(endpoints.getImage(code))
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Invalid code or image not found');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data?.image?.url) {
+          setImageData(data.image);
+          setImageCode(code);
+        } else {
+          setError('No image found for this code');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setError(error.message || 'Failed to retrieve image');
+      })
+      .finally(() => {
+        setImageLoading(false);
+      });
+  };
+
   const copyToClipboard = () => {
     if (!receivedData) return;
 
@@ -60,6 +100,11 @@ const RecievePage = () => {
       });
   };
 
+  const downloadImage = () => {
+    if (!imageCode) return;
+    window.location.href = endpoints.downloadImage(imageCode);
+  };
+
   return (
     <div>
       <div className="nameBanner">
@@ -70,10 +115,21 @@ const RecievePage = () => {
         <div className="receiveContainer">
           <div className="receivedData">
             <h1>Received Data</h1>
-            {/* Here we ensure newlines are respected by using <pre> */}
-            <pre className="data">
-              {receivedData || 'Enter a code below to fetch shared content...'}
-            </pre>
+            {}
+            {imageData ? (
+              <div className="imageResult">
+                <div className="imagePreviewLarge">
+                  <img src={imageData.url} alt={imageData.originalName || 'Shared'} />
+                </div>
+                <div className="imageMeta">
+                  {imageData.originalName || 'Shared image'}
+                </div>
+              </div>
+            ) : (
+              <pre className="data">
+                {receivedData || 'Enter a code below to fetch shared content...'}
+              </pre>
+            )}
           </div>
 
           <div className="input-group">
@@ -106,13 +162,30 @@ const RecievePage = () => {
               </button>
             )}
 
+            {imageData && (
+              <button
+                className="Btn"
+                onClick={downloadImage}
+              >
+                Download
+              </button>
+            )}
+
             <button
               className="Btn"
               id="recievePageBtn"
               onClick={receiveData}
               disabled={loading}
             >
-              {loading ? 'Loading...' : 'Receive'}
+              {loading ? 'Loading...' : 'Receive Text'}
+            </button>
+
+            <button
+              className="Btn image-receive-btn"
+              onClick={receiveImage}
+              disabled={imageLoading}
+            >
+              {imageLoading ? 'Loading...' : 'Receive Image'}
             </button>
 
             <button
@@ -130,3 +203,4 @@ const RecievePage = () => {
 };
 
 export default RecievePage;
+

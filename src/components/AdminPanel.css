@@ -1,4 +1,4 @@
-/* AdminPanel.css */
+
 :root {
     --primary-color: #8B5CF6;
     --secondary-color: #4F46E5;
@@ -37,7 +37,7 @@
     justify-content: center;
     flex-wrap: wrap;
     gap: 1rem;
-    margin: 5rem 0 2rem; /* Increased top margin to shift buttons down */
+    margin: 5rem 0 2rem; 
     position: relative;
     z-index: 1;
 }
@@ -116,6 +116,25 @@
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: 'Source Code Pro', monospace;
+}
+
+.image-thumb {
+    width: 80px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 .actions {
@@ -307,7 +326,7 @@
     border-color: rgba(139, 92, 246, 0.3);
 }
 
-/* Modal styles */
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -453,7 +472,7 @@
     background-image: linear-gradient(to right, rgba(100, 116, 139, 0.7), rgba(71, 85, 105, 0.7));
 }
 
-/* Action message */
+
 .action-message {
     position: fixed;
     top: 2rem;
@@ -492,7 +511,7 @@
     .admin-controls {
         flex-direction: column;
         align-items: center;
-        margin: 2.5rem 0 1.5rem; /* Adjusted for smaller screens */
+        margin: 2.5rem 0 1.5rem; 
     }
 
     .admin-controls .Btn {

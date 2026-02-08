@@ -151,6 +151,43 @@
   line-height: 1.5;
 }
 
+.imageResult {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1.2rem;
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.imagePreviewLarge {
+  width: 100%;
+  height: 320px;
+  max-height: 50vh;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.imagePreviewLarge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.imageMeta {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
 .data::after {
   content: '';
   position: absolute;
@@ -316,7 +353,7 @@ input[type="text"]:focus {
   }
 }
 
-/* For Back button differentiate slightly */
+
 #backBtn {
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.8);
@@ -333,6 +370,19 @@ input[type="text"]:focus {
 
 #backBtn:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.image-receive-btn {
+  background-image: linear-gradient(to right,
+      rgba(245, 158, 11, 0.8),
+      rgba(239, 68, 68, 0.8)) !important;
+}
+
+.image-receive-btn::before {
+  background: linear-gradient(45deg,
+      rgba(245, 158, 11, 0.9),
+      rgba(239, 68, 68, 0.9),
+      rgba(249, 115, 22, 0.9));
 }
 
 #recievePageBtn {
