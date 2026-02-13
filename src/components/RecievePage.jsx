@@ -184,7 +184,7 @@ const RecievePage = () => {
             ) : pdfData ? (
               <div className="pdfResult">
                 <div className="pdfPreviewLarge">
-                  <iframe src={pdfData.url} title="Shared PDF" />
+                  <iframe src={endpoints.previewPdf(pdfCode)} title="Shared PDF" />
                 </div>
                 <div className="pdfMeta">
                   {pdfData.originalName || 'Shared PDF'}
