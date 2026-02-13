@@ -188,6 +188,43 @@
   text-align: center;
 }
 
+.pdfResult {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1.2rem;
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.pdfPreviewLarge {
+  width: 100%;
+  height: 360px;
+  max-height: 60vh;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.pdfPreviewLarge iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.pdfMeta {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
 .data::after {
   content: '';
   position: absolute;
@@ -383,6 +420,19 @@ input[type="text"]:focus {
       rgba(245, 158, 11, 0.9),
       rgba(239, 68, 68, 0.9),
       rgba(249, 115, 22, 0.9));
+}
+
+.pdf-receive-btn {
+  background-image: linear-gradient(to right,
+      rgba(14, 165, 233, 0.8),
+      rgba(56, 189, 248, 0.8)) !important;
+}
+
+.pdf-receive-btn::before {
+  background: linear-gradient(45deg,
+      rgba(14, 165, 233, 0.9),
+      rgba(56, 189, 248, 0.9),
+      rgba(59, 130, 246, 0.9));
 }
 
 #recievePageBtn {

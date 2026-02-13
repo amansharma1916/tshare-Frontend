@@ -128,6 +128,13 @@ const ImageSharePage = () => {
 
             <button
               className="Btn secondaryBtn"
+              onClick={() => { window.location.href = '/share-pdf'; }}
+            >
+              Share PDF
+            </button>
+
+            <button
+              className="Btn secondaryBtn"
               onClick={() => { window.location.href = '/'; }}
             >
               Back

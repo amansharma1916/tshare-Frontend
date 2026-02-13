@@ -113,7 +113,7 @@ const SharePage = () => {
               onClick={saveTextDb}
               disabled={loading}
             >
-              {loading ? 'Processing...' : 'Share'}
+              {loading ? 'Processing...' : 'Share Text'}
             </button>
 
             <button
@@ -121,6 +121,13 @@ const SharePage = () => {
               onClick={() => { window.location.href = '/share-image'; }}
             >
               Share Image
+            </button>
+
+            <button
+              className="Btn pdf-share-btn"
+              onClick={() => { window.location.href = '/share-pdf'; }}
+            >
+              Share PDF
             </button>
 
             <button

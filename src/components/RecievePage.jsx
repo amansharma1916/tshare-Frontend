@@ -9,8 +9,12 @@ const RecievePage = () => {
   const [imageLoading, setImageLoading] = useState(false);
   const [imageData, setImageData] = useState(null);
   const [imageCode, setImageCode] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfData, setPdfData] = useState(null);
+  const [pdfCode, setPdfCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const inputRef = useRef(null);
 
   const receiveData = () => {
@@ -22,8 +26,11 @@ const RecievePage = () => {
 
     setLoading(true);
     setError('');
+    setSuccessMessage('');
     setImageData(null);
     setImageCode('');
+    setPdfData(null);
+    setPdfCode('');
 
     fetch(endpoints.get(code))
       .then(res => {
@@ -39,6 +46,7 @@ const RecievePage = () => {
             .replace(/\\t/g, '\t')
             .replace(/\\\\/g, '\\');
           setReceivedData(unescapedText);
+          setSuccessMessage('Text received successfully.');
         } else {
           setError('No data found for this code');
         }
@@ -61,7 +69,10 @@ const RecievePage = () => {
 
     setImageLoading(true);
     setError('');
+    setSuccessMessage('');
     setReceivedData('');
+    setPdfData(null);
+    setPdfCode('');
 
     fetch(endpoints.getImage(code))
       .then(res => {
@@ -74,6 +85,7 @@ const RecievePage = () => {
         if (data?.image?.url) {
           setImageData(data.image);
           setImageCode(code);
+          setSuccessMessage('Image received wait for it to load or Download it now.');
         } else {
           setError('No image found for this code');
         }
@@ -84,6 +96,45 @@ const RecievePage = () => {
       })
       .finally(() => {
         setImageLoading(false);
+      });
+  };
+
+  const receivePdf = () => {
+    const code = inputRef.current.value.trim();
+    if (!code) {
+      setError('Please enter a code');
+      return;
+    }
+
+    setPdfLoading(true);
+    setError('');
+    setSuccessMessage('');
+    setReceivedData('');
+    setImageData(null);
+    setImageCode('');
+
+    fetch(endpoints.getPdf(code))
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Invalid code or PDF not found');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data?.pdf?.url) {
+          setPdfData(data.pdf);
+          setPdfCode(code);
+          setSuccessMessage('PDF received wait for it to load or Download it now.');
+        } else {
+          setError('No PDF found for this code');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setError(error.message || 'Failed to retrieve PDF');
+      })
+      .finally(() => {
+        setPdfLoading(false);
       });
   };
 
@@ -103,6 +154,11 @@ const RecievePage = () => {
   const downloadImage = () => {
     if (!imageCode) return;
     window.location.href = endpoints.downloadImage(imageCode);
+  };
+
+  const downloadPdf = () => {
+    if (!pdfCode) return;
+    window.location.href = endpoints.downloadPdf(pdfCode);
   };
 
   return (
@@ -125,6 +181,15 @@ const RecievePage = () => {
                   {imageData.originalName || 'Shared image'}
                 </div>
               </div>
+            ) : pdfData ? (
+              <div className="pdfResult">
+                <div className="pdfPreviewLarge">
+                  <iframe src={pdfData.url} title="Shared PDF" />
+                </div>
+                <div className="pdfMeta">
+                  {pdfData.originalName || 'Shared PDF'}
+                </div>
+              </div>
             ) : (
               <pre className="data">
                 {receivedData || 'Enter a code below to fetch shared content...'}
@@ -137,7 +202,10 @@ const RecievePage = () => {
               type="text"
               placeholder="Enter the share code..."
               ref={inputRef}
-              onChange={() => error && setError('')}
+              onChange={() => {
+                if (error) setError('');
+                if (successMessage) setSuccessMessage('');
+              }}
             />
             {error && (
               <div style={{
@@ -147,6 +215,16 @@ const RecievePage = () => {
                 textAlign: 'center'
               }}>
                 {error}
+              </div>
+            )}
+            {successMessage && !error && (
+              <div style={{
+                color: '#22c55e',
+                fontSize: '0.9rem',
+                marginTop: '0.5rem',
+                textAlign: 'center'
+              }}>
+                {successMessage}
               </div>
             )}
           </div>
@@ -171,6 +249,15 @@ const RecievePage = () => {
               </button>
             )}
 
+            {pdfData && (
+              <button
+                className="Btn"
+                onClick={downloadPdf}
+              >
+                Download PDF
+              </button>
+            )}
+
             <button
               className="Btn"
               id="recievePageBtn"
@@ -186,6 +273,14 @@ const RecievePage = () => {
               disabled={imageLoading}
             >
               {imageLoading ? 'Loading...' : 'Receive Image'}
+            </button>
+
+            <button
+              className="Btn pdf-receive-btn"
+              onClick={receivePdf}
+              disabled={pdfLoading}
+            >
+              {pdfLoading ? 'Loading...' : 'Receive PDF'}
             </button>
 
             <button
